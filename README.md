@@ -1,5 +1,7 @@
 # SimpleCollections for Arduino and mbed summary
 
+Dave Cherry / TheCodersCorner make this library available for you to use. It takes me significant effort to keep all my libraries current and working on a wide range of boards. Please consider making at least a one off donation via the sponsor button if you find it useful.
+
 This library provides a btree-list implementation that can be used as a straight list, but it is always associative. BtreeList works on a very wide range of boards from Uno right up to most mbed devices. It's benefit for library writers especially is the very wide range of devices it can target with low memory requirements on the smallest of boards.
 
 Why? Because on many embedded boards std lib is simply not available, and on others it is potentially a bit too heavy at runtime. This collection is designed to run on anything from Uno upwards with reasonable performance. 
@@ -37,7 +39,7 @@ The key type can be any type that is 4 bytes or fewer. This is a limitation of t
 
 ## Quick start - create a list, iterate, get by key
 
-Contents of the iteration example to get you started, you can either copy into your ide or open the iteration example.
+Contents of the iteration example to get you started, you can either copy into your ide or open the iteration example. In short, first we create the MyStorage type that will be stored in the list, it has a key of type uint8_t. We then create the list object, populating it in the `setup()` method. In the loop we then read back the values using various techniques.
 
     #include <Arduino.h>
     #include <SimpleCollections.h>
