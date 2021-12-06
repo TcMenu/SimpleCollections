@@ -38,9 +38,6 @@ bool BtreeStorage::add(const void *newItem) {
     // given the insert position, work out the number of items to move
     int amtToMove = (currentSize - insertionPoint);
 
-    // for debugging
-    // serdebugF4("add ", insertionPoint, keyAccessor(newItem), amtToMove);
-
     // move the instances in reverse order using their assignment operator.
     if(amtToMove > 0) {
         for (bsize_t i = insertionPoint + amtToMove; i > insertionPoint; --i) {
@@ -86,13 +83,12 @@ bsize_t BtreeStorage::nearestLocation(uint32_t key) {
     else if(currentSize == 1) return (key <= keyAccessor(binTree)) ? 0 : 1;
     else if(key > keyAccessor(memoryOf(binTree, currentSize - 1))) return currentSize;
 
-    // otherwise we search with binary chop
+    // otherwise, we search with binary chop
     bsize_t start = 0;
     bsize_t end = currentSize - 1;
     bsize_t midPoint;
     while((end - start) > 1) {
         midPoint = start + ((end - start) / 2);
-        //serdebugF4("start mid end", start, midPoint, end);
         auto midKey = keyAccessor(memoryOf(binTree, midPoint));
         if(midKey == key) return midPoint;
         else if(midKey > key) end = midPoint;
@@ -115,6 +111,5 @@ bsize_t BtreeStorage::nearestLocation(uint32_t key) {
 void *BtreeStorage::getByKey(uint32_t key) {
     if(currentSize == 0) return nullptr;
     bsize_t loc = nearestLocation(key);
-    //serdebugF3("getByKey ", loc, key);
     return (keyAccessor(memoryOf(binTree, loc)) == key && loc < currentSize) ? memoryOf(binTree, loc) : nullptr;
 }
