@@ -116,15 +116,17 @@ Where the size is the initial capacity of the list, and the grow by mode is one 
 
 ## Platforms known to work
 
+The following platforms are ones that we test with, they are generally the best choices to use with this library.
+
 | Platform | Board / Arch   | State            |
 |----------|----------------|------------------|
-| Arduino  | Nano 33 BLE    | Examples run     |
-| Arduino  | Uno, MEGA, AVR | Examples run     |
-| Arduino  | SAMD MKR1300   | Examples run     |
-| Arduino  | SAMD Seeed     | Examples run     |
-| Arduino  | ESP8266        | Awaiting         |
-| Arduino  | ESP32          | Awaiting         |
-| mbed     | STM32F4        | Ran mbed example |
+| Arduino  | Nano 33 BLE    | Examples tested  |
+| Arduino  | Uno, MEGA, AVR | Examples tested  |
+| Arduino  | SAMD MKR1300   | Examples tested  |
+| Arduino  | SAMD Seeed     | Examples tested  |
+| Arduino  | ESP8266        | Examples tested  |
+| Arduino  | ESP32          | Examples tested  |
+| mbed     | STM32F4        | mbed example run |
 
 ## Making changes to SimpleCollections
 
