@@ -3,7 +3,11 @@
  * This product is licensed under an Apache license, see the LICENSE file in the top-level directory.
  */
 
+#ifdef __AVR__
+#include <Arduino.h>
+#else
 #include <malloc.h>
+#endif
 #include "SimpleCollections.h"
 
 using namespace ioaTreeInternal;

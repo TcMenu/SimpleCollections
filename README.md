@@ -114,6 +114,18 @@ Where the size is the initial capacity of the list, and the grow by mode is one 
 
     bsize_t capacity() // the current allocated size of the array
 
+## Platforms known to work
+
+| Platform | Board / Arch   | State            |
+|----------|----------------|------------------|
+| Arduino  | Nano 33 BLE    | Examples run     |
+| Arduino  | Uno, MEGA, AVR | Examples run     |
+| Arduino  | SAMD MKR1300   | Examples run     |
+| Arduino  | SAMD Seeed     | Examples run     |
+| Arduino  | ESP8266        | Awaiting         |
+| Arduino  | ESP32          | Awaiting         |
+| mbed     | STM32F4        | Ran mbed example |
+
 ## Making changes to SimpleCollections
 
 We welcome people rolling up their sleeves and helping out, but please do reach out to us before starting any work, so we can ensure its in sync with our development. We use platformIO for development and have a specific project available to help you get started, along with tests that check many elements still work as expected. See [https://github.com/davetcc/tcLibraryDev]

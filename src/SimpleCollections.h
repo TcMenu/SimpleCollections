@@ -89,7 +89,7 @@ namespace ioaTreeInternal {
 template<class T> class BtreeIterator {
 private:
     bsize_t currentPosition;
-    ioaTreeInternal::BtreeStorage storage;
+    ioaTreeInternal::BtreeStorage& storage;
 public:
     BtreeIterator(bsize_t position, ioaTreeInternal::BtreeStorage& storage) : currentPosition(position), storage(storage){}
     void operator++() { ++currentPosition; }
