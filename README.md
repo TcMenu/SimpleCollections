@@ -2,11 +2,11 @@
 
 Dave Cherry / TheCodersCorner.com make this library available for you to use. It takes me significant effort to keep all my libraries current and working on a wide range of boards. Please consider making at least a one off donation via the sponsor button if you find it useful. In forks, please keep text to here intact.
 
-This library provides a btree-list implementation that can be used as a straight list, but it is always associative. BtreeList works on a very wide range of boards from Uno right up to most mbed devices. It's benefit for library writers especially is the very wide range of devices it can target with low memory requirements on the smallest of boards.
+This library provides two collections. Firstly, a btree-list implementation that can be used as a straight list, but it is always associative. BtreeList works on a very wide range of boards from Uno right up to most mbed devices. It's benefit for library writers especially is the very wide range of devices it can target with low memory requirements on the smallest of boards. Secondly, a circular buffer that is safe for concurrent use on many Arduino and mbed boards. 
 
 Why? Because on many embedded boards std lib is simply not available, and on others it is potentially a bit too heavy at runtime. This collection is designed to run on anything from Uno upwards with reasonable performance. 
 
-This class has been expanded upon and broken out from IoAbstraction, as such it has been battle tested in IoAbstraction and TcMenu. You should be aware that use across multiple FreeRTOS tasks or threads on larger boards will require suitable mutex lock. Usage during interrupts is not recommended.
+Btree list has been expanded upon and broken out from IoAbstraction, as such it has been battle tested in IoAbstraction and TcMenu. Btree list unlike CircularBuffer should not be used across threads. It is safe within tasks on TaskManager.
 
 There is a forum where questions can be asked, but the rules of engagement are: **this is my hobby, I make it available because it helps others**. Don't expect immediate answers, make sure you've recreated the problem in a simple sketch that you can send to me. Please consider making at least a one time donation using the sponsor link above before using the forum. 
 
@@ -113,6 +113,36 @@ Where the size is the initial capacity of the list, and the grow by mode is one 
     bsize_t count() // the number of items in the list
 
     bsize_t capacity() // the current allocated size of the array
+
+## Concurrent Circular Buffers
+
+This library also supports concurrent circular buffers that work on most boards listed below. These buffers have independent writer and reader positions. This means that one thread can offer data, and another thread can read that data. It is entirely non-blocking and therefore safe across threads or even in interrupts. Be aware that if used in interrupts, the writer position is managed using CAS instructions (or emulation thereof) and will be slow if more than one thread does the writing (because of busy spin waiting).
+
+There is an example that shows the usage of the circular buffer, but the API is really simple.
+
+### Creating a circular buffer
+
+We first create an instance and indicate the size needed, the size is fixed and if the writer exceeds the reader, it will wrap and data is lost.
+
+    #include <SimpleCollections.h>
+    #include <CircularBuffer.h>
+
+    CircularBuffer buffer(20);
+
+### Writing to the buffer
+
+Write a byte to the buffer by calling `put`, it will **wrap** if the reader gets behind.
+
+    buffer.put(dataByte);
+
+### Reading and checking the buffer
+
+Only ever call `get` after checking that data is `available`, only one thread should ever be reading at once.
+
+    if(buffer.available()) {
+        uint8_t data = buffer.get();
+        // do something with "data"
+    }
 
 ## Platforms known to work
 
