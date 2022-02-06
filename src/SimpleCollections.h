@@ -13,11 +13,15 @@
 #include <string.h>
 #include <inttypes.h>
 
-enum GrowByMode : unsigned char {
-    GROW_NEVER,
-    GROW_BY_5,
-    GROW_BY_DOUBLE
-};
+namespace tccollection {
+
+    enum GrowByMode : unsigned char {
+        GROW_NEVER,
+        GROW_BY_5,
+        GROW_BY_DOUBLE
+    };
+
+}
 
 #ifdef __AVR_ATmega2560__
 # define DEFAULT_LIST_SIZE 10
@@ -55,9 +59,9 @@ namespace ioaTreeInternal {
         bsize_t currentCapacity;
         bsize_t currentSize;
         bsize_t sizeOfAnItem;
-        GrowByMode growByMode;
+        tccollection::GrowByMode growByMode;
     public:
-        BtreeStorage(bsize_t size, GrowByMode howToGrow, bsize_t eachItemSize, KeyAccessor compareOperator,
+        BtreeStorage(bsize_t size, tccollection::GrowByMode howToGrow, bsize_t eachItemSize, KeyAccessor compareOperator,
                      CopyOperator copyOperator);
 
         ~BtreeStorage();
@@ -86,20 +90,27 @@ namespace ioaTreeInternal {
     };
 }
 
+namespace tccollection {
+
 /**
  * An iterator that fulfills the range interface so that it can be used with range statements in c++ 17.
  * @tparam T
  */
-template<class T> class BtreeIterator {
-private:
-    bsize_t currentPosition;
-    ioaTreeInternal::BtreeStorage& storage;
-public:
-    BtreeIterator(bsize_t position, ioaTreeInternal::BtreeStorage& storage) : currentPosition(position), storage(storage){}
-    void operator++() { ++currentPosition; }
-    bool operator!=(const BtreeIterator & other) const { return currentPosition != other.currentPosition; }
-    T& operator*() { return ((T*)storage.underlyingData())[currentPosition]; }
-};
+    template<class T>
+    class BtreeIterator {
+    private:
+        bsize_t currentPosition;
+        ioaTreeInternal::BtreeStorage &storage;
+    public:
+        BtreeIterator(bsize_t position, ioaTreeInternal::BtreeStorage &storage) : currentPosition(position),
+                                                                                  storage(storage) {}
+
+        void operator++() { ++currentPosition; }
+
+        bool operator!=(const BtreeIterator &other) const { return currentPosition != other.currentPosition; }
+
+        T &operator*() { return ((T *) storage.underlyingData())[currentPosition]; }
+    };
 
 /**
  * A very simple binary search based list. It is useful for storage of items by key or just regular storage,
@@ -116,125 +127,131 @@ public:
  * the list will either return NULL or a valid item. You can also obtain all values too, which is always sorted by key
  * and is marked const, do not alter this array.
  */
-template<class K, class V> class BtreeList {
-private:
-    ioaTreeInternal::BtreeStorage treeStorage;
-public:
-    explicit BtreeList(bsize_t size = DEFAULT_LIST_SIZE, GrowByMode howToGrow = DEFAULT_GROW_MODE)
-        : treeStorage(size, howToGrow, sizeof(V), keyAccessor, copyInternal) { }
+    template<class K, class V>
+    class BtreeList {
+    private:
+        ioaTreeInternal::BtreeStorage treeStorage;
+    public:
+        explicit BtreeList(bsize_t size = DEFAULT_LIST_SIZE, GrowByMode howToGrow = DEFAULT_GROW_MODE)
+                : treeStorage(size, howToGrow, sizeof(V), keyAccessor, copyInternal) {}
 
-    static uint32_t keyAccessor(const void* itm) {
-        return reinterpret_cast<const V*>(itm)->getKey();
-    }
-
-    static void copyInternal(void* dest, const void* src) {
-        auto *itemDest = reinterpret_cast<V*>(dest);
-        auto *itemSrc = reinterpret_cast<const V*>(src);
-        *itemDest = *itemSrc;
-    }
-
-    /**
-     * Adds an item into the current list of items, the list will be sorted by using getKey()
-     * on the object passed in. If the list cannot fit the item and cannot resize to do so, then
-     * false is returned.
-     * @param item the item to add
-     * @return true if added, otherwise false
-     */
-    bool add(const V& item) { return treeStorage.add(&item); }
-
-    /**
-     * Get a value by it's key using a binary search algorithm.
-     * @param key the key to be looked up
-     * @return the value at that key position or null.
-     */
-    V* getByKey(K key) { return reinterpret_cast<V*>(treeStorage.getByKey(key)); };
-
-    /**
-     * Remove an item using the key it was added with
-     * @param key the key to remove
-     * @return true if successful otherwise false.
-     */
-    bool removeByKey(K key) { return treeStorage.removeByKey(key); }
-
-    /**
-     * Remove an item by index in the underlying array
-     * @param index the index in the array
-     */
-     void removeIndex(bsize_t index) { treeStorage.removeIndex(index); }
-
-    /**
-     * gets the nearest location to the key, this is an in-exact method in that it gives the exact match if available
-     * or otherwise the nearest one that is lower.
-     * @param key the key to lookup
-     * @return the position in the list
-     */
-    bsize_t nearestLocation(const K& key) { return treeStorage.nearestLocation(key); }
-
-    /**
-     * @return a list of all items
-     */
-    const V* items() { return reinterpret_cast<V*>(treeStorage.underlyingData()); };
-
-    /**
-     * gets an item by it's index
-     * @param idx the index to find
-     * @return the item at the index or null.
-     */
-    V* itemAtIndex(bsize_t idx) {
-        auto* binTree = reinterpret_cast<V*>(treeStorage.underlyingData());
-        return (idx < treeStorage.getCurrentSize())  ? &binTree[idx] : NULL;
-    }
-
-    /**
-     * @return number of items in the list
-     */
-    bsize_t count() {
-        return treeStorage.getCurrentSize();
-    }
-
-    /**
-     * @return current capacity of the list
-     */
-    bsize_t capacity() { return treeStorage.getCapacity(); }
-
-    /**
-     * Completely clear down the list such that calls to count return 0.
-     */
-    void clear() { treeStorage.clear(); }
-
-    /**
-     * Implements the range begin function for use with C++ ranges, represents the beginning of the list, supports
-     * using ++ to get the next item, but if using manually check against end() before accessing the value.
-     *
-     * For example to iterate you can
-     *
-     * ```for(auto& item : myBtreeList) { item.doSomething(); } ```
-     *
-     * @return an iterator for the beginning of the list.
-     */
-    BtreeIterator<V> begin() { return BtreeIterator<V>(0, treeStorage); }
-
-    /**
-     * An iterator that represnts the value beyond the end of the list, for use with C++ ranges.
-     * @return an iterator that represents the end of the list. Normally used with begin().
-     */
-    BtreeIterator<V> end() { return BtreeIterator<V>(treeStorage.getCurrentSize(), treeStorage); }
-
-    /**
-     * Implements a simple foreach item loop, where your callback function is called once for each item in the list.
-     * This may be helpful for those that think the introduction of an iterator is too heavy for their board.
-     *
-     * For example:
-     *
-     * ```myBtreeList.forEachItem( [] (BtreeType* item) { item.doSomething(); } );
-     *
-     * @param paramFn
-     */
-    void forEachItem(void(*paramFn)(V*)) {
-        for(bsize_t i=0; i<count(); ++i) {
-            paramFn(itemAtIndex(i));
+        static uint32_t keyAccessor(const void *itm) {
+            return reinterpret_cast<const V *>(itm)->getKey();
         }
-    }
-};
+
+        static void copyInternal(void *dest, const void *src) {
+            auto *itemDest = reinterpret_cast<V *>(dest);
+            auto *itemSrc = reinterpret_cast<const V *>(src);
+            *itemDest = *itemSrc;
+        }
+
+        /**
+         * Adds an item into the current list of items, the list will be sorted by using getKey()
+         * on the object passed in. If the list cannot fit the item and cannot resize to do so, then
+         * false is returned.
+         * @param item the item to add
+         * @return true if added, otherwise false
+         */
+        bool add(const V &item) { return treeStorage.add(&item); }
+
+        /**
+         * Get a value by it's key using a binary search algorithm.
+         * @param key the key to be looked up
+         * @return the value at that key position or null.
+         */
+        V *getByKey(K key) { return reinterpret_cast<V *>(treeStorage.getByKey(key)); };
+
+        /**
+         * Remove an item using the key it was added with
+         * @param key the key to remove
+         * @return true if successful otherwise false.
+         */
+        bool removeByKey(K key) { return treeStorage.removeByKey(key); }
+
+        /**
+         * Remove an item by index in the underlying array
+         * @param index the index in the array
+         */
+        void removeIndex(bsize_t index) { treeStorage.removeIndex(index); }
+
+        /**
+         * gets the nearest location to the key, this is an in-exact method in that it gives the exact match if available
+         * or otherwise the nearest one that is lower.
+         * @param key the key to lookup
+         * @return the position in the list
+         */
+        bsize_t nearestLocation(const K &key) { return treeStorage.nearestLocation(key); }
+
+        /**
+         * @return a list of all items
+         */
+        const V *items() { return reinterpret_cast<V *>(treeStorage.underlyingData()); };
+
+        /**
+         * gets an item by it's index
+         * @param idx the index to find
+         * @return the item at the index or null.
+         */
+        V *itemAtIndex(bsize_t idx) {
+            auto *binTree = reinterpret_cast<V *>(treeStorage.underlyingData());
+            return (idx < treeStorage.getCurrentSize()) ? &binTree[idx] : NULL;
+        }
+
+        /**
+         * @return number of items in the list
+         */
+        bsize_t count() {
+            return treeStorage.getCurrentSize();
+        }
+
+        /**
+         * @return current capacity of the list
+         */
+        bsize_t capacity() { return treeStorage.getCapacity(); }
+
+        /**
+         * Completely clear down the list such that calls to count return 0.
+         */
+        void clear() { treeStorage.clear(); }
+
+        /**
+         * Implements the range begin function for use with C++ ranges, represents the beginning of the list, supports
+         * using ++ to get the next item, but if using manually check against end() before accessing the value.
+         *
+         * For example to iterate you can
+         *
+         * ```for(auto& item : myBtreeList) { item.doSomething(); } ```
+         *
+         * @return an iterator for the beginning of the list.
+         */
+        BtreeIterator<V> begin() { return BtreeIterator<V>(0, treeStorage); }
+
+        /**
+         * An iterator that represnts the value beyond the end of the list, for use with C++ ranges.
+         * @return an iterator that represents the end of the list. Normally used with begin().
+         */
+        BtreeIterator<V> end() { return BtreeIterator<V>(treeStorage.getCurrentSize(), treeStorage); }
+
+        /**
+         * Implements a simple foreach item loop, where your callback function is called once for each item in the list.
+         * This may be helpful for those that think the introduction of an iterator is too heavy for their board.
+         *
+         * For example:
+         *
+         * ```myBtreeList.forEachItem( [] (BtreeType* item) { item.doSomething(); } );
+         *
+         * @param paramFn
+         */
+        void forEachItem(void(*paramFn)(V *)) {
+            for (bsize_t i = 0; i < count(); ++i) {
+                paramFn(itemAtIndex(i));
+            }
+        }
+    };
+}
+
+#ifndef TC_COLLECTION_MANUAL_NAMESPACE
+using namespace tccollection;
+#endif
 
 #endif // SIMPLE_COLLECTIONS_H

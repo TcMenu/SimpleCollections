@@ -20,6 +20,7 @@
 
 #include <mbed.h>
 #include <SimpleCollections.h>
+#include <SCCircularBuffer.h>
 
 BufferedSerial console(USBTX, USBRX, 115200);
 
@@ -46,7 +47,20 @@ public:
 };
 
 BtreeList<uint32_t, MbedStorage> myList;
+SCCircularBuffer buffer(20);
+Thread bufferWriter;
+volatile bool running = true;
 
+//
+// Yet another thread that constantly raises events to test thread safety of task manager.
+//
+uint8_t loopCounter = 0;
+void bufferWriterThreadProc() {
+    while(running) {
+        ThisThread::sleep_for(500ms);
+        buffer.put(loopCounter++);
+    }
+}
 
 void log(const char* toLog) {
     console.write(toLog, strlen(toLog));
@@ -60,26 +74,35 @@ int main() {
     myList.add(MbedStorage("Aloha"));
     myList.add(MbedStorage(frenchWelcome));
 
+    log("Iterate list using C++ range");
+    for (auto d: myList) {
+        log(d.getData());
+    }
+
+    log("Iterate list using forEach");
+    myList.forEachItem([](MbedStorage *storage) {
+        log(storage->getData());
+    });
+
+    log("Find an item by key");
+    auto toCheck = myList.getByKey(frenchWelcome.getKey());
+    if (toCheck && toCheck->getKey() == frenchWelcome.getKey()) {
+        log("Found item using key");
+    } else {
+        log("Find by key failed");
+    }
+
+    bufferWriter.start(bufferWriterThreadProc);
+
+
     while(1) {
-        log("Iterate list using C++ range");
-        for (auto d: myList) {
-            log(d.getData());
+        if(buffer.available()) {
+            log("received buffer");
+            char sz[50];
+            sprintf(sz, "received buffer %i", buffer.get());
+            log(sz);
         }
-
-        log("Iterate list using forEach");
-        myList.forEachItem([](MbedStorage *storage) {
-            log(storage->getData());
-        });
-
-        log("Find an item by key");
-        auto toCheck = myList.getByKey(frenchWelcome.getKey());
-        if (toCheck && toCheck->getKey() == frenchWelcome.getKey()) {
-            log("Found item using key");
-        } else {
-            log("Find by key failed");
-        }
-
-        ThisThread::sleep_for(2000ms);
+        ThisThread::sleep_for(100ms);
     }
     return 0;
 }

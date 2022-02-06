@@ -10,11 +10,11 @@
 
 #include <Arduino.h>
 #include <SimpleCollections.h>
-#include <CircularBuffer.h>
+#include <SCCircularBuffer.h>
 
 #define INTERRUPT_PIN 2
 
-CircularBuffer buffer(32);
+SCCircularBuffer buffer(32);
 
 volatile uint8_t counter = 0;
 

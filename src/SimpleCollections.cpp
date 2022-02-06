@@ -9,9 +9,9 @@
 #include <malloc.h>
 #endif
 #include "SimpleCollections.h"
-#include <IoLogging.h>
 
 using namespace ioaTreeInternal;
+using namespace tccollection;
 
 BtreeStorage::BtreeStorage(bsize_t size, GrowByMode howToGrow, bsize_t itemSize, KeyAccessor keyAccess, CopyOperator copyOperator) {
     currentCapacity = size;
@@ -65,8 +65,6 @@ bool BtreeStorage::removeByKey(uint32_t key) {
 void BtreeStorage::removeIndex(bsize_t index) {
     // given the insert position, work out the number of items to move
     int amtToMove = (currentSize - index) - 1;
-
-    serdebugF4("remove ", amtToMove, index, currentCapacity);
 
     // move the instances in reverse order using their assignment operator.
     if(amtToMove > 0) {

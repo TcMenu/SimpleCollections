@@ -1,16 +1,17 @@
 
-#include <CircularBuffer.h>
+#include <SimpleCollections.h>
+#include <SCCircularBuffer.h>
 #include <AUnit.h>
 #include <IoLogging.h>
 
-void putIntoBuffer(CircularBuffer& buffer, const char* data) {
+void putIntoBuffer(SCCircularBuffer& buffer, const char* data) {
     while(*data) {
         buffer.put(*data);
         data++;
     }
 }
 
-bool verifyBuffer(CircularBuffer& buffer, const char* data) {
+bool verifyBuffer(SCCircularBuffer& buffer, const char* data) {
     bool ret = true;
     while(*data) {
         if(!buffer.available()) {
@@ -28,7 +29,7 @@ bool verifyBuffer(CircularBuffer& buffer, const char* data) {
 }
 
 test(testWritingAndThenReadingWithoutLoss) {
-    CircularBuffer buffer(20);
+    SCCircularBuffer buffer(20);
 
     putIntoBuffer(buffer, "hello");
     assertTrue(verifyBuffer(buffer, "hello"));
@@ -44,7 +45,7 @@ test(testWritingAndThenReadingWithoutLoss) {
 }
 
 test(testWritingAndThenReadingMoreThanAvailable) {
-    CircularBuffer buffer(20);
+    SCCircularBuffer buffer(20);
 
     putIntoBuffer(buffer, "this is longer than 20 chars");
     // the buffer has wrapped, so we have lost everything before the wrapping point basically

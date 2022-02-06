@@ -14,7 +14,8 @@
 typedef volatile uint32_t* position_ptr_t;
 typedef volatile uint32_t position_t;
 inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
-    return core_util_atomic_cas_u32(ptr, &expected, newVal);
+    uint32_t exp = expected;
+    return core_util_atomic_cas_u32(ptr, &exp, newVal);
 }
 inline uint16_t readAtomic(position_ptr_t ptr) { return *(ptr); }
 #elif defined(ESP8266)
@@ -56,31 +57,41 @@ inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal
 inline uint16_t readAtomic(position_ptr_t ptr) { return *ptr; }
 #endif
 
+namespace tccollection {
+
 /**
  * Create a circular buffer that has a fixed size and can be filled and read at the same time one character at a time.
- * It is very thread safe on ESP32 and mbed based boards, it is moderately thread safe on other boards.
+ * It is very thread safe on ESP32 and mbed based boards, it is thread safe on other boards, unless you are using that
+ * board with an unexpected RTOS, in which case you would need to determine suitability yourself.
  *
  * Imagine the buffer like a circle with a given number of segments, both the reader and writer pointers start at 0.
  * As the data structure fills up the writer will move around, and the reader can try and "keep up". Once the reader
  * or writer gets to the end it will go back to 0 (start). This is by design and therefore, IT'S POSSIBLE TO LOSE DATA.
  */
-class CircularBuffer {
-private:
-    position_t readerPosition;
-    position_t writerPosition;
-    const uint16_t bufferSize;
-    uint8_t *const buffer;
+    class SCCircularBuffer {
+    private:
+        position_t readerPosition;
+        position_t writerPosition;
+        const uint16_t bufferSize;
+        uint8_t *const buffer;
 
-public:
-    explicit CircularBuffer(uint16_t size);
-    ~CircularBuffer();
+    public:
+        explicit SCCircularBuffer(uint16_t size);
 
-    bool available() const { return readerPosition != writerPosition; }
-    void put(uint8_t by) { buffer[nextPosition(&writerPosition)] = by;}
-    uint8_t get() { return buffer[nextPosition(&readerPosition)]; }
-private:
-    uint16_t nextPosition(position_ptr_t by);
-};
+        ~SCCircularBuffer();
+
+        bool available() const { return readerPosition != writerPosition; }
+
+        void put(uint8_t by) { buffer[nextPosition(&writerPosition)] = by; }
+
+        uint8_t get() { return buffer[nextPosition(&readerPosition)]; }
+
+    private:
+        uint16_t nextPosition(position_ptr_t by);
+    };
+
+}
+
 
 
 #endif //SIMPLECOLLECTIONS_CIRCULARBUFFER_H
