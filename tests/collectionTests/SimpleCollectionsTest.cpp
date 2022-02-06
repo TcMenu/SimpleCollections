@@ -181,3 +181,72 @@ test(testAddingWithSortAndResizeBy5) {
     assertEqual(btreeList.getByKey(9)->getItem(), 108);
 
 }
+
+class NumericStorageItem {
+private:
+    uint32_t item;
+
+public:
+    NumericStorageItem() : item(0xffffffff) {}
+    explicit NumericStorageItem(uint32_t value) : item(value) {}
+    NumericStorageItem(const NumericStorageItem& other) = default;
+    NumericStorageItem& operator= (const NumericStorageItem& other) = default;
+    uint32_t getKey() const { return item; }
+};
+
+void printArray(const NumericStorageItem* list, int size) {
+    char sz[160];
+    strcpy(sz, "array: ");
+    for(int i=0;i<size;i++) {
+        char intBuf[10];
+        itoa((int)(list[i].getKey()), intBuf, 10);
+        strcat(sz, intBuf);
+        strcat(sz, " ");
+    }
+    serdebug(sz);
+}
+
+
+test(testAddingThenRemovingThenAddingItems) {
+    BtreeList<uint32_t, NumericStorageItem> myList;
+
+    for(int i=0;i<20;i++) {
+        myList.add(NumericStorageItem(i + 100));
+    }
+
+    // should have 20 items now
+    assertEqual(myList.count(), bsize_t(20));
+
+    // remove key 102
+    assertTrue(myList.removeByKey(102));
+    assertFalse(myList.removeByKey(10002));
+
+    printArray(myList.items(), myList.count());
+
+    // should have 19 items
+    assertEqual(myList.count(), bsize_t(19));
+
+    // ensure that only 102 was removed
+    assertTrue(myList.getByKey(102) == nullptr);
+    assertTrue(myList.getByKey(103) != nullptr);
+    assertTrue(myList.getByKey(101) != nullptr);
+
+    // put 102 back
+    myList.add(NumericStorageItem(102));
+
+    printArray(myList.items(), myList.count());
+
+    for(int i=0;i<20;i++) {
+        auto entry = myList.itemAtIndex(i);
+        assertEqual(entry->getKey(), uint32_t(i + 100));
+    }
+
+    // now test removing the edge cases, IE head and tail of list
+    myList.removeIndex(0);
+    myList.removeIndex(19);
+    printArray(myList.items(), myList.count());
+
+    assertEqual(myList.count(), bsize_t(18));
+    assertTrue(myList.getByKey(100) == nullptr);
+    assertTrue(myList.getByKey(119) == nullptr);
+}

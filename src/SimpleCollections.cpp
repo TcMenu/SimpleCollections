@@ -9,6 +9,7 @@
 #include <malloc.h>
 #endif
 #include "SimpleCollections.h"
+#include <IoLogging.h>
 
 using namespace ioaTreeInternal;
 
@@ -49,6 +50,31 @@ bool BtreeStorage::add(const void *newItem) {
     copier(memoryOf(binTree, insertionPoint), newItem);
     currentSize++;
     return true;
+}
+
+bool BtreeStorage::removeByKey(uint32_t key) {
+    for(bsize_t i = 0; i<currentSize; ++i) {
+        if(keyAccessor(memoryOf(binTree, i)) == key) {
+            removeIndex(i);
+            return true;
+        }
+    }
+    return false;
+}
+
+void BtreeStorage::removeIndex(bsize_t index) {
+    // given the insert position, work out the number of items to move
+    int amtToMove = (currentSize - index) - 1;
+
+    serdebugF4("remove ", amtToMove, index, currentCapacity);
+
+    // move the instances in reverse order using their assignment operator.
+    if(amtToMove > 0) {
+        for (bsize_t i = index; i < index + amtToMove; ++i) {
+            copier(memoryOf(binTree, i), memoryOf(binTree, i + 1));
+        }
+    }
+    currentSize--;
 }
 
 /**

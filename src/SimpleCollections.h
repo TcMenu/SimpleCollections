@@ -64,6 +64,10 @@ namespace ioaTreeInternal {
 
         bool add(const void *newItem);
 
+        bool removeByKey(uint32_t key);
+
+        void removeIndex(bsize_t index);
+
         bsize_t nearestLocation(uint32_t key);
 
         void *getByKey(uint32_t key);
@@ -144,6 +148,19 @@ public:
      * @return the value at that key position or null.
      */
     V* getByKey(K key) { return reinterpret_cast<V*>(treeStorage.getByKey(key)); };
+
+    /**
+     * Remove an item using the key it was added with
+     * @param key the key to remove
+     * @return true if successful otherwise false.
+     */
+    bool removeByKey(K key) { return treeStorage.removeByKey(key); }
+
+    /**
+     * Remove an item by index in the underlying array
+     * @param index the index in the array
+     */
+     void removeIndex(bsize_t index) { treeStorage.removeIndex(index); }
 
     /**
      * gets the nearest location to the key, this is an in-exact method in that it gives the exact match if available
