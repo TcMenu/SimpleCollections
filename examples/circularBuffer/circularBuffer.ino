@@ -12,7 +12,7 @@
 #include <SimpleCollections.h>
 #include <SCCircularBuffer.h>
 
-#define INTERRUPT_PIN 2
+#define INTERRUPT_PIN 1
 
 SCCircularBuffer buffer(32);
 
@@ -27,6 +27,7 @@ void interruptHasOccurred() {
 void setup() {
     // start up the serial port
     Serial.begin(115200);
+    while(!Serial);
     Serial.println("Starting circular buffer example");
 
     // enable interrupts on a pin so we can "put" items in the buffer
