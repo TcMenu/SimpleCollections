@@ -122,9 +122,9 @@ This library also supports concurrent circular buffers that work on most boards 
 
 There is an example that shows the usage of the circular buffer, but the API is really simple.
 
-### Creating a circular buffer
+### Creating a circular buffer for storage of bytes (uint8_t)
 
-We first create an instance and indicate the size needed, the size is fixed and if the writer exceeds the reader, it will wrap and data is lost.
+We first create an instance and indicate the size needed, the size is fixed and if the writer exceeds the reader, it will wrap and data is lost. See further down for circular buffers of more complex types.
 
     #include <SimpleCollections.h>
     #include <SCCircularBuffer.h>
@@ -146,19 +146,71 @@ Only ever call `get` after checking that data is `available`, only one thread sh
         // do something with "data"
     }
 
+## Creating a GenericCircularBuffer for a type other than uint8_t
+
+You can create a circular buffer for type other than byte, to do so, you use the `GenericCircularBuffer` instead. It takes a type parameter and is a template, so only use when you need to store other than byte in it.
+
+Bear in mind, that if the item you are storing in the circular buffer is not atomic, such as a pointer, or a machine length word, you risk it being corrupt when you see it on the other thread. To get around this we recommend that you have two circular buffers, one acting as a memory pool, and the other as the actual buffer. They should be the same type:
+
+    // let's say we want to store this structure in the buffer 
+    struct WriterStruct {
+        volatile uint32_t sequence;
+        volatile uint32_t data1;
+        volatile uint32_t data2;
+
+        void setData(uint32_t s, uint32_t d1, uint32_t d2) {
+            sequence = s;
+            data1 = d1;
+            data2 = d2;
+        }
+    };
+
+    // we first create a buffer that acts as a pool, notice the 2nd parameter. It has the same number of above structures as the actual queue
+    GenericCircularBuffer<WriterStruct> writerMemoryAlloc(10,GenericCircularBuffer::MEMORY_POOL);
+    // We then create the actual buffer, it takes pointers to the structure
+    GenericCircularBuffer<WriterStruct*> actualBuffer(10);
+
+    void putSomethingIntoQueue() {
+        // first we get the next available structure from the pool
+        auto &alloc = writerMemoryAlloc.get();
+        // now we prepare it to be sent, it must be entirely ready!
+        alloc.setData(nextSequence, nextSequence * 1000, nextSequence * 2000);
+        // now we send it.
+        actualBuffer.put(&alloc);
+    }
+
+The queue is read back as normal, but we get back a pointer.
+
+    if(actualBuffer.available()) {
+        auto myData = actualBuffer.get();
+        auto localData1 = myData->data1;
+    }
+
+In short, you should never queue an object until it is fully and atomically ready. Again, just like with circular buffers themselves, the memory pool will wrap if the writer gets too far ahead of the reader.
+
 ## Platforms known to work
 
 The following platforms are ones that we test with, they are generally the best choices to use with this library.
 
-| Platform | Board / Arch   | State            |
-|----------|----------------|------------------|
-| Arduino  | Nano 33 BLE    | Examples tested  |
-| Arduino  | Uno, MEGA, AVR | Examples tested  |
-| Arduino  | SAMD MKR1300   | Examples tested  |
-| Arduino  | SAMD Seeed     | Examples tested  |
-| Arduino  | ESP8266        | Examples tested  |
-| Arduino  | ESP32          | Examples tested  |
-| mbed     | STM32F4        | mbed example run |
+| Platform | Board / Arch   | State            | Thread safety   |
+|----------|----------------|------------------|-----------------|
+| Arduino  | Nano 33 BLE    | Examples tested  | CAS             |         
+| Arduino  | Uno, MEGA, AVR | Examples tested  | Atomic          |
+| Arduino  | SAMD MKR1300   | Examples tested  | Atomic          |
+| Arduino  | SAMD Seeed     | Examples tested  | Atomic          |        
+| Arduino  | STM32Duino     | Examples tested  | CAS if possible |  
+| Arduino  | ESP8266        | Examples tested  | Atomic          |
+| Arduino  | ESP32          | Examples tested  | CAS             |
+| mbed     | STM32F4        | mbed example run | CAS             |
+
+Thread safety key:
+
+* Atomic - the compare and set is implemented in software and wrapped with noInterrupts / interrupts
+* CAS - the compare and set is implemented using processor level instructions (STM32Duino) or in the case of mbed and ESP32, by their utility function.
+
+The circular buffer is thread safe on nearly all boards, for larger ARM processors that are at least CortexM4 level you can enable CAS locking, we do it automatically for STM32Duino boards that meet the required cortex level. You can do this yourself by defining `SC_USE_ARM_ASM_CAS` for other ARM boards that are on at least CORTEX M4.
+
+In the event you see issues indicating LDREX or STREX are not supported, please raise an issue here with the exact board and define `SC_NO_ARM_ASM_CAS`; which will then turn off the support while we can fix it.
 
 ## Making changes to SimpleCollections
 

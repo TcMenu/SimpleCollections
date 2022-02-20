@@ -8,54 +8,7 @@
 
 #include <string.h>
 #include <inttypes.h>
-
-#if defined(__MBED__) || defined(ARDUINO_ARDUINO_NANO33BLE)
-#include <mbed_atomic.h>
-typedef volatile uint32_t* position_ptr_t;
-typedef volatile uint32_t position_t;
-inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
-    uint32_t exp = expected;
-    return core_util_atomic_cas_u32(ptr, &exp, newVal);
-}
-inline uint16_t readAtomic(position_ptr_t ptr) { return *(ptr); }
-#elif defined(ESP8266)
-#include <Arduino.h>
-typedef volatile uint32_t* position_ptr_t;
-typedef volatile uint32_t position_t;
-#define NEEDS_CAS_EMULATION
-#elif defined(ESP32)
-#include <Arduino.h>
-typedef volatile uint32_t* position_ptr_t;
-typedef volatile uint32_t position_t;
-inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
-    uint32_t exp32 = expected;
-    uint32_t new32 = newVal;
-    uxPortCompareSet(ptr, exp32, &new32);
-    return new32 == expected;
-}
-inline uint16_t readAtomic(position_ptr_t ptr) { return *(ptr); }
-#else
-#include <Arduino.h>
-typedef volatile uint16_t* position_ptr_t;
-typedef volatile uint16_t position_t;
-#define NEEDS_CAS_EMULATION
-#endif
-
-// In this case we are only partially thread safe, we block against interrupts firing but that is about all we can do
-// For AVR and smaller ARM devices that don't support pre-emptive threads this may be enough.
-#ifdef NEEDS_CAS_EMULATION
-inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
-        auto ret = false;
-        noInterrupts();
-        if(*ptr == expected) {
-            *ptr = newVal;
-            ret = true;
-        }
-        interrupts();
-        return ret;
-}
-inline uint16_t readAtomic(position_ptr_t ptr) { return *ptr; }
-#endif
+#include <SCThreadingSupport.h>
 
 namespace tccollection {
 
@@ -68,6 +21,49 @@ namespace tccollection {
  * As the data structure fills up the writer will move around, and the reader can try and "keep up". Once the reader
  * or writer gets to the end it will go back to 0 (start). This is by design and therefore, IT'S POSSIBLE TO LOSE DATA.
  */
+
+    template<class T> class GenericCircularBuffer {
+    public:
+        enum BufferType { CIRCULAR_BUFFER, MEMORY_POOL };
+
+#ifdef SC_DEBUG_CHECKER
+        volatile uint32_t casExchangeSpins = 0;
+#endif
+
+    private:
+        position_t readerPosition;
+        position_t writerPosition;
+        const uint16_t bufferSize;
+        T *const buffer;
+        bool actingAsMemoryPool;
+
+    public:
+        GenericCircularBuffer(uint16_t size, BufferType asMemPool = CIRCULAR_BUFFER) : readerPosition(0), writerPosition(0),
+                                bufferSize(size), buffer(new T[size]), actingAsMemoryPool(asMemPool) {}
+        ~GenericCircularBuffer() { delete[] buffer; }
+
+        bool available() const { return actingAsMemoryPool || readerPosition != writerPosition; }
+        void put(const T& by) { buffer[nextPosition(&writerPosition)] = by; }
+        T& get() { return buffer[nextPosition(&readerPosition)]; }
+
+        int16_t nextPosition(position_ptr_t positionPtr) {
+            bool successfullyUpdated = false;
+            position_t existing;
+            while(!successfullyUpdated) {
+                existing = readAtomic(positionPtr);
+                position_t newPos = existing + 1;
+                if (newPos >= bufferSize) {
+                    newPos = 0;
+                }
+                successfullyUpdated = casAtomic(positionPtr, existing, newPos);
+#ifdef SC_DEBUG_CHECKER
+                if(!successfullyUpdated) casExchangeSpins++;
+#endif
+            }
+            return existing;
+        }
+    };
+
     class SCCircularBuffer {
     private:
         position_t readerPosition;

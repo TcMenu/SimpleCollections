@@ -57,7 +57,7 @@ test(testWritingAndThenReadingMoreThanAvailable) {
 #include <pthread.h>
 
 volatile bool testRunning = true;
-CircularBuffer glBuffer(200);
+SCCircularBuffer glBuffer(200);
 uint8_t counter = 0;
 
 void* threadProc(void*) {
