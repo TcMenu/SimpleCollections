@@ -18,7 +18,7 @@
 #include <inttypes.h>
 
 // START PROCESSOR/BOARD SELECTION BLOCK
-#if defined(__MBED__) || defined(ARDUINO_ARDUINO_NANO33BLE)
+#if defined(__MBED__) || defined(TMIOA_FORCE_ARDUINO_MBED)
 #include <mbed_atomic.h>
 typedef volatile uint32_t* position_ptr_t;
 typedef volatile uint32_t position_t;
