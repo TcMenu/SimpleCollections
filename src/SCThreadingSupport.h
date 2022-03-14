@@ -26,7 +26,7 @@ inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal
     uint32_t exp = expected;
     return core_util_atomic_cas_u32(ptr, &exp, newVal);
 }
-inline uint16_t readAtomic(position_ptr_t ptr) { return *(ptr); }
+inline position_t readAtomic(position_ptr_t ptr) { return *(ptr); }
 #elif (defined(SC_USE_ARM_ASM_CAS) || defined(ARDUINO_ARCH_STM32)) && !defined(SC_NO_ARM_ASM_CAS)
 #include <Arduino.h>
 #if __CORTEX_M > 0x03U
