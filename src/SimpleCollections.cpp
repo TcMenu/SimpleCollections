@@ -100,7 +100,7 @@ bool BtreeStorage::checkCapacity() {
     return true;
 }
 
-bsize_t BtreeStorage::nearestLocation(uint32_t key) {
+bsize_t BtreeStorage::nearestLocation(uint32_t key) const {
     // a few short circuits, basically handling quickly nothing in list,
     // one item in the list and an insertion at the end of the list.
     if(currentSize == 0) return 0; // always first item in this case
@@ -132,7 +132,7 @@ bsize_t BtreeStorage::nearestLocation(uint32_t key) {
     return end;
 }
 
-void *BtreeStorage::getByKey(uint32_t key) {
+void *BtreeStorage::getByKey(uint32_t key) const {
     if(currentSize == 0) return nullptr;
     bsize_t loc = nearestLocation(key);
     return (keyAccessor(memoryOf(binTree, loc)) == key && loc < currentSize) ? memoryOf(binTree, loc) : nullptr;

@@ -72,13 +72,13 @@ namespace ioaTreeInternal {
 
         void removeIndex(bsize_t index);
 
-        bsize_t nearestLocation(uint32_t key);
+        bsize_t nearestLocation(uint32_t key) const;
 
-        void *getByKey(uint32_t key);
+        void *getByKey(uint32_t key) const;
 
         void clear() { currentSize = 0; }
 
-        void *underlyingData() { return binTree; }
+        void *underlyingData() const { return binTree; }
 
         bsize_t getCapacity() const { return currentCapacity; }
 
@@ -100,9 +100,9 @@ namespace tccollection {
     class BtreeIterator {
     private:
         bsize_t currentPosition;
-        ioaTreeInternal::BtreeStorage &storage;
+        const ioaTreeInternal::BtreeStorage &storage;
     public:
-        BtreeIterator(bsize_t position, ioaTreeInternal::BtreeStorage &storage) : currentPosition(position),
+        BtreeIterator(bsize_t position, const ioaTreeInternal::BtreeStorage &storage) : currentPosition(position),
                                                                                   storage(storage) {}
 
         void operator++() { ++currentPosition; }
@@ -132,8 +132,35 @@ namespace tccollection {
     private:
         ioaTreeInternal::BtreeStorage treeStorage;
     public:
+        /**
+         * Create a btree list that can be used to store simple objects that are not polymorphic. If no parameters are
+         * provided it will construct with the defaults for your board.
+         * @param size the initial size of the list, optional
+         * @param howToGrow the way in which it should grow if space runs out, optional
+         */
         explicit BtreeList(bsize_t size = DEFAULT_LIST_SIZE, GrowByMode howToGrow = DEFAULT_GROW_MODE)
                 : treeStorage(size, howToGrow, sizeof(V), keyAccessor, copyInternal) {}
+        /**
+         * Advanced usage constructor, prefer using the other constructor whenever possible.
+         *
+         * This constructor allows you to provide your own key accessor, some other libraries require slightly different
+         * ways of accessing the object. For the key accessor you'll be provided with a pointer to a memory area, this
+         * area contains the item for which we need the key, you return the key value from the accessor as a uint32_t.
+         *
+         * The default key accessor is as follows:
+         *
+         * ```
+         * static uint32_t keyAccessor(const void *itm) {
+         *    return reinterpret_cast<const V *>(itm)->getKey();
+         * }
+         * ```
+         *
+         * @param customAccessor the custom accessor that is called to return the key
+         * @param size the size of the list, optional parameter.
+         * @param howToGrow the method for growing when space runs out, optional parameter
+         */
+        explicit BtreeList(ioaTreeInternal::KeyAccessor customAccessor, bsize_t size = DEFAULT_LIST_SIZE, GrowByMode howToGrow = DEFAULT_GROW_MODE)
+                : treeStorage(size, howToGrow, sizeof(V), customAccessor, copyInternal) {}
 
         static uint32_t keyAccessor(const void *itm) {
             return reinterpret_cast<const V *>(itm)->getKey();
@@ -159,7 +186,7 @@ namespace tccollection {
          * @param key the key to be looked up
          * @return the value at that key position or null.
          */
-        V *getByKey(K key) { return reinterpret_cast<V *>(treeStorage.getByKey(key)); };
+        V *getByKey(K key) const { return reinterpret_cast<V *>(treeStorage.getByKey(key)); };
 
         /**
          * Remove an item using the key it was added with
@@ -180,19 +207,19 @@ namespace tccollection {
          * @param key the key to lookup
          * @return the position in the list
          */
-        bsize_t nearestLocation(const K &key) { return treeStorage.nearestLocation(key); }
+        bsize_t nearestLocation(const K &key) const { return treeStorage.nearestLocation(key); }
 
         /**
          * @return a list of all items
          */
-        const V *items() { return reinterpret_cast<V *>(treeStorage.underlyingData()); };
+        const V *items() const { return reinterpret_cast<V *>(treeStorage.underlyingData()); };
 
         /**
          * gets an item by it's index
          * @param idx the index to find
          * @return the item at the index or null.
          */
-        V *itemAtIndex(bsize_t idx) {
+        V *itemAtIndex(bsize_t idx) const {
             auto *binTree = reinterpret_cast<V *>(treeStorage.underlyingData());
             return (idx < treeStorage.getCurrentSize()) ? &binTree[idx] : NULL;
         }
@@ -200,14 +227,14 @@ namespace tccollection {
         /**
          * @return number of items in the list
          */
-        bsize_t count() {
+        bsize_t count() const {
             return treeStorage.getCurrentSize();
         }
 
         /**
          * @return current capacity of the list
          */
-        bsize_t capacity() { return treeStorage.getCapacity(); }
+        bsize_t capacity() const { return treeStorage.getCapacity(); }
 
         /**
          * Completely clear down the list such that calls to count return 0.
@@ -224,13 +251,13 @@ namespace tccollection {
          *
          * @return an iterator for the beginning of the list.
          */
-        BtreeIterator<V> begin() { return BtreeIterator<V>(0, treeStorage); }
+        BtreeIterator<V> begin() const { return BtreeIterator<V>(0, treeStorage); }
 
         /**
          * An iterator that represnts the value beyond the end of the list, for use with C++ ranges.
          * @return an iterator that represents the end of the list. Normally used with begin().
          */
-        BtreeIterator<V> end() { return BtreeIterator<V>(treeStorage.getCurrentSize(), treeStorage); }
+        BtreeIterator<V> end() const { return BtreeIterator<V>(treeStorage.getCurrentSize(), treeStorage); }
 
         /**
          * Implements a simple foreach item loop, where your callback function is called once for each item in the list.
