@@ -12,6 +12,7 @@ There is a forum where questions can be asked, but the rules of engagement are: 
 
 * [TCC Libraries community discussion forum](https://www.thecoderscorner.com/jforum/)
 * I also monitor the Arduino forum [https://forum.arduino.cc/], Arduino related questions can be asked there too.
+* [More documentation on the thecoderscorner site](https://www.thecoderscorner.com/products/arduino-libraries/simple-collections/)
 
 ## Installation for Arduino IDE
 
