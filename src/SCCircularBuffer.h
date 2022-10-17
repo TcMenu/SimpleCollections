@@ -39,7 +39,9 @@ namespace tccollection {
 
     public:
         explicit GenericCircularBuffer(uint16_t size, BufferType asMemPool = CIRCULAR_BUFFER) : readerPosition(0), writerPosition(0),
-                                bufferSize(size), buffer(new T[size]), actingAsMemoryPool(asMemPool) {}
+                                bufferSize(size), buffer(new T[size]), actingAsMemoryPool(asMemPool) {
+            atomicInitialisationSupport();
+        }
         ~GenericCircularBuffer() { delete[] buffer; }
 
         bool available() const { return actingAsMemoryPool || readerPosition != writerPosition; }

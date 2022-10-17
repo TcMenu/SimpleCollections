@@ -6,6 +6,11 @@
 #ifndef SIMPLECOLLECTIONS_SCTHREADINGSUPPORT_H
 #define SIMPLECOLLECTIONS_SCTHREADINGSUPPORT_H
 
+// when not on mbed, we need to load Arduino.h to get the right defines for some boards.
+#ifndef __MBED__
+#include <Arduino.h>
+#endif
+
 /**
  * @file SCThreadingSupport.h
  * Contains two definitions that are board specific that allow the circular buffer to be thread safe on a wide range of
@@ -18,16 +23,26 @@
 #include <inttypes.h>
 
 // START PROCESSOR/BOARD SELECTION BLOCK
-#if defined(__MBED__) || defined(TMIOA_FORCE_ARDUINO_MBED)
+#if defined(ARDUINO_PICO_REVISION)
+#include <Arduino.h>
+typedef volatile uint32_t* position_ptr_t;
+typedef volatile uint32_t position_t;
+bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal);
+inline position_t readAtomic(position_ptr_t ptr) { return *(ptr); }
+void atomicInitialisationSupport();
+#define SIMPLECOLLECTIONS_PICO_PHT_SUPPORT
+#elif defined(__MBED__) || defined(TMIOA_FORCE_ARDUINO_MBED)
 #include <mbed_atomic.h>
 typedef volatile uint32_t* position_ptr_t;
 typedef volatile uint32_t position_t;
+#define atomicInitialisationSupport()
 inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
     uint32_t exp = expected;
     return core_util_atomic_cas_u32(ptr, &exp, newVal);
 }
 inline position_t readAtomic(position_ptr_t ptr) { return *(ptr); }
 #elif (defined(SC_USE_ARM_ASM_CAS) || defined(ARDUINO_ARCH_STM32)) && !defined(SC_NO_ARM_ASM_CAS)
+#define atomicInitialisationSupport()
 #include <Arduino.h>
 #if __CORTEX_M > 0x03U
 #define SIMPLE_COLLECTIONS_ARM_SUPPORT
@@ -44,11 +59,13 @@ typedef volatile uint32_t position_t;
 #include <Arduino.h>
 typedef volatile uint32_t* position_ptr_t;
 typedef volatile uint32_t position_t;
+#define atomicInitialisationSupport()
 #define NEEDS_CAS_EMULATION
 #elif defined(ESP32)
 #include <Arduino.h>
 typedef volatile uint32_t* position_ptr_t;
 typedef volatile uint32_t position_t;
+#define atomicInitialisationSupport()
 inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
     uint32_t exp32 = expected;
     uint32_t new32 = newVal;
@@ -58,6 +75,7 @@ inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal
 inline uint16_t readAtomic(position_ptr_t ptr) { return *(ptr); }
 #else
 #include <Arduino.h>
+#define atomicInitialisationSupport()
 typedef volatile uint16_t* position_ptr_t;
 typedef volatile uint16_t position_t;
 #define NEEDS_CAS_EMULATION

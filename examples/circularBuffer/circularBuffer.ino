@@ -11,6 +11,7 @@
 #include <Arduino.h>
 #include <SimpleCollections.h>
 #include <SCCircularBuffer.h>
+#include <IoLogging.h>
 
 #define INTERRUPT_PIN 1
 
@@ -26,9 +27,9 @@ void interruptHasOccurred() {
 
 void setup() {
     // start up the serial port
-    Serial.begin(115200);
-    while(!Serial);
-    Serial.println("Starting circular buffer example");
+    Serial1.begin(115200);
+  //  while(!Serial);
+    serdebugF("Starting circular buffer example");
 
     // enable interrupts on a pin so we can "put" items in the buffer
     pinMode(INTERRUPT_PIN, INPUT_PULLUP);
@@ -39,8 +40,7 @@ void loop() {
     // whenever data is available we read it, otherwise we wait a bit in our example, in a real system this would
     // be within task manager, or within a busy loop.
     if(buffer.available()) {
-        Serial.print("Buffer read ");
-        Serial.println(buffer.get());
+        serdebugF2("Buffer read ", buffer.get());
     }
 
     delay(1);
