@@ -46,3 +46,45 @@ bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
 }
 
 #endif
+
+#ifdef SIMPLECOLLECTIONS_PICO_PHT_SUPPORT
+
+// see https://raspberrypi.github.io/pico-sdk-doxygen/group__critical__section.html
+
+class CircularBufferProtector {
+private:
+    static critical_section_t* circularBufferProtection;
+public:
+    static void initIfNeeded() {
+        if(circularBufferProtection == nullptr) {
+            circularBufferProtection = new critical_section_t;
+            critical_section_init(circularBufferProtection);
+        }
+    }
+
+    CircularBufferProtector() {
+        critical_section_enter_blocking(circularBufferProtection);
+    }
+
+    ~CircularBufferProtector() {
+        critical_section_exit(circularBufferProtection);
+    }
+};
+
+critical_section_t* CircularBufferProtector::circularBufferProtection = nullptr;
+
+bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
+    CircularBufferProtector protector;
+    auto ret = false;
+    if(*ptr == expected) {
+        *ptr = newVal;
+        ret = true;
+    }
+    return ret;
+}
+
+void atomicInitialisationSupport() {
+    CircularBufferProtector::initIfNeeded();
+}
+
+#endif

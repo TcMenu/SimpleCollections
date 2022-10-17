@@ -7,7 +7,9 @@
 
 using namespace tccollection;
 
-SCCircularBuffer::SCCircularBuffer(uint16_t size) : readerPosition(0), writerPosition(0), bufferSize(size), buffer(new uint8_t[size]) {}
+SCCircularBuffer::SCCircularBuffer(uint16_t size) : readerPosition(0), writerPosition(0), bufferSize(size), buffer(new uint8_t[size]) {
+    atomicInitialisationSupport();
+}
 
 SCCircularBuffer::~SCCircularBuffer() {
     delete[] buffer;
