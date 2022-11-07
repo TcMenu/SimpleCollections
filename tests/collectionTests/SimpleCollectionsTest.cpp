@@ -1,6 +1,8 @@
 #include <SimpleCollections.h>
-#include <AUnit.h>
+#include <testing/SimpleTest.h>
 #include <IoLogging.h>
+
+using namespace SimpleTest;
 
 class TestStorage {
 private:
@@ -61,13 +63,13 @@ TestStorage storage10(10, 109);
 
 test(testNearestLocationEdgeCases) {
     BtreeList<int, TestStorage> btreeList(5, GROW_NEVER);
-    assertEqual((bsize_t)0, btreeList.nearestLocation(1));
+    assertEquals((bsize_t)0, btreeList.nearestLocation(1));
 
     assertTrue(btreeList.add(storage4));
     printArray(btreeList.items(), btreeList.count());
 
-    assertEqual((bsize_t)0, btreeList.nearestLocation(1));
-    assertEqual((bsize_t)1, btreeList.nearestLocation(5));
+    assertEquals((bsize_t)0, btreeList.nearestLocation(1));
+    assertEquals((bsize_t)1, btreeList.nearestLocation(5));
 }
 
 test(testAddingWithoutSortOrResize) {
@@ -88,11 +90,11 @@ test(testAddingWithoutSortOrResize) {
     assertTrue(btreeList.getByKey(5) != nullptr);
     assertTrue(btreeList.getByKey(6) == nullptr);
 
-    assertEqual(btreeList.getByKey(1)->getItem(), 100);
-    assertEqual(btreeList.getByKey(2)->getItem(), 101);
-    assertEqual(btreeList.getByKey(3)->getItem(), 102);
-    assertEqual(btreeList.getByKey(4)->getItem(), 103);
-    assertEqual(btreeList.getByKey(5)->getItem(), 104);
+    assertEquals(btreeList.getByKey(1)->getItem(), 100);
+    assertEquals(btreeList.getByKey(2)->getItem(), 101);
+    assertEquals(btreeList.getByKey(3)->getItem(), 102);
+    assertEquals(btreeList.getByKey(4)->getItem(), 103);
+    assertEquals(btreeList.getByKey(5)->getItem(), 104);
 }
 
 test(testAddingWithSortNoResize) {
@@ -114,20 +116,20 @@ test(testAddingWithSortNoResize) {
     assertTrue(btreeList.getByKey(6) == nullptr);
 
     const TestStorage* allItems = btreeList.items();
-    assertEqual(allItems[0].getKey(), 1);
-    assertEqual(allItems[1].getKey(), 2);
-    assertEqual(allItems[2].getKey(), 3);
-    assertEqual(allItems[3].getKey(), 4);
-    assertEqual(allItems[4].getKey(), 5);
+    assertEquals(allItems[0].getKey(), 1);
+    assertEquals(allItems[1].getKey(), 2);
+    assertEquals(allItems[2].getKey(), 3);
+    assertEquals(allItems[3].getKey(), 4);
+    assertEquals(allItems[4].getKey(), 5);
 
-    assertEqual(allItems[0].getKey(), btreeList.itemAtIndex(0)->getKey());
-    assertEqual(allItems[1].getKey(), btreeList.itemAtIndex(1)->getKey());
+    assertEquals(allItems[0].getKey(), btreeList.itemAtIndex(0)->getKey());
+    assertEquals(allItems[1].getKey(), btreeList.itemAtIndex(1)->getKey());
 
-    assertEqual(btreeList.getByKey(1)->getItem(), 100);
-    assertEqual(btreeList.getByKey(2)->getItem(), 101);
-    assertEqual(btreeList.getByKey(3)->getItem(), 102);
-    assertEqual(btreeList.getByKey(4)->getItem(), 103);
-    assertEqual(btreeList.getByKey(5)->getItem(), 104);
+    assertEquals(btreeList.getByKey(1)->getItem(), 100);
+    assertEquals(btreeList.getByKey(2)->getItem(), 101);
+    assertEquals(btreeList.getByKey(3)->getItem(), 102);
+    assertEquals(btreeList.getByKey(4)->getItem(), 103);
+    assertEquals(btreeList.getByKey(5)->getItem(), 104);
 }
 
 test(testAddingWithSortAndResizeBy5) {
@@ -139,13 +141,13 @@ test(testAddingWithSortAndResizeBy5) {
     assertTrue(btreeList.add(storage4));
     assertTrue(btreeList.add(storage3));
 
-    assertEqual((bsize_t)5, btreeList.capacity());
+    assertEquals((bsize_t)5, btreeList.capacity());
     assertTrue(btreeList.add(storage6));
     assertTrue(btreeList.add(storage7));
     assertTrue(btreeList.add(storage2));
     assertTrue(btreeList.add(storage1));
     assertTrue(btreeList.add(storage10));
-    assertEqual((bsize_t)10, btreeList.capacity());
+    assertEquals((bsize_t)10, btreeList.capacity());
     printArray(btreeList.items(), btreeList.count());
 
     assertTrue(btreeList.getByKey(1) != nullptr);
@@ -159,26 +161,26 @@ test(testAddingWithSortAndResizeBy5) {
     assertTrue(btreeList.getByKey(9) != nullptr);
     assertTrue(btreeList.getByKey(10) != nullptr);
 
-    assertEqual(btreeList.getByKey(1)->getItem(), 100);
-    assertEqual(btreeList.getByKey(2)->getItem(), 101);
-    assertEqual(btreeList.getByKey(3)->getItem(), 102);
-    assertEqual(btreeList.getByKey(4)->getItem(), 103);
-    assertEqual(btreeList.getByKey(5)->getItem(), 104);
-    assertEqual(btreeList.getByKey(6)->getItem(), 105);
-    assertEqual(btreeList.getByKey(7)->getItem(), 106);
-    assertEqual(btreeList.getByKey(8)->getItem(), 107);
-    assertEqual(btreeList.getByKey(9)->getItem(), 108);
-    assertEqual(btreeList.getByKey(10)->getItem(), 109);
+    assertEquals(btreeList.getByKey(1)->getItem(), 100);
+    assertEquals(btreeList.getByKey(2)->getItem(), 101);
+    assertEquals(btreeList.getByKey(3)->getItem(), 102);
+    assertEquals(btreeList.getByKey(4)->getItem(), 103);
+    assertEquals(btreeList.getByKey(5)->getItem(), 104);
+    assertEquals(btreeList.getByKey(6)->getItem(), 105);
+    assertEquals(btreeList.getByKey(7)->getItem(), 106);
+    assertEquals(btreeList.getByKey(8)->getItem(), 107);
+    assertEquals(btreeList.getByKey(9)->getItem(), 108);
+    assertEquals(btreeList.getByKey(10)->getItem(), 109);
 
     // clear the tree and ensure it clears
     btreeList.clear();
-    assertEqual((bsize_t)10, btreeList.capacity());
-    assertEqual((bsize_t)0, btreeList.count());
+    assertEquals((bsize_t)10, btreeList.capacity());
+    assertEquals((bsize_t)0, btreeList.count());
 
     // now add an item back and make sure we find it.
     assertTrue(btreeList.add(storage9));
     assertTrue(btreeList.getByKey(9) != nullptr);
-    assertEqual(btreeList.getByKey(9)->getItem(), 108);
+    assertEquals(btreeList.getByKey(9)->getItem(), 108);
 
 }
 
@@ -215,7 +217,7 @@ test(testAddingThenRemovingThenAddingItems) {
     }
 
     // should have 20 items now
-    assertEqual(myList.count(), bsize_t(20));
+    assertEquals(myList.count(), bsize_t(20));
 
     // remove key 102
     assertTrue(myList.removeByKey(102));
@@ -224,7 +226,7 @@ test(testAddingThenRemovingThenAddingItems) {
     printArray(myList.items(), myList.count());
 
     // should have 19 items
-    assertEqual(myList.count(), bsize_t(19));
+    assertEquals(myList.count(), bsize_t(19));
 
     // ensure that only 102 was removed
     assertTrue(myList.getByKey(102) == nullptr);
@@ -238,7 +240,7 @@ test(testAddingThenRemovingThenAddingItems) {
 
     for(int i=0;i<20;i++) {
         auto entry = myList.itemAtIndex(i);
-        assertEqual(entry->getKey(), uint32_t(i + 100));
+        assertEquals(entry->getKey(), uint32_t(i + 100));
     }
 
     // now test removing the edge cases, IE head and tail of list
@@ -246,7 +248,7 @@ test(testAddingThenRemovingThenAddingItems) {
     myList.removeIndex(19);
     printArray(myList.items(), myList.count());
 
-    assertEqual(myList.count(), bsize_t(18));
+    assertEquals(myList.count(), bsize_t(18));
     assertTrue(myList.getByKey(100) == nullptr);
     assertTrue(myList.getByKey(119) == nullptr);
 }

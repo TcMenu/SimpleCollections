@@ -1,8 +1,9 @@
 
-#include <SimpleCollections.h>
 #include <SCCircularBuffer.h>
-#include <AUnit.h>
+#include <testing/SimpleTest.h>
 #include <IoLogging.h>
+
+using namespace SimpleTest;
 
 void putIntoBuffer(SCCircularBuffer& buffer, const char* data) {
     while(*data) {
