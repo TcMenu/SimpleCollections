@@ -12,6 +12,7 @@
 
 #include <string.h>
 #include <inttypes.h>
+#include <SCThreadingSupport.h>
 
 namespace tccollection {
 

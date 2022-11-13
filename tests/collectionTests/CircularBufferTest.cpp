@@ -86,8 +86,8 @@ test(testThreadedWriterAndReader) {
         else vPortYield();
     }
 
-    assertMore(myCount, (uint8_t)198);
-    assertMore(itemsReceived, (uint8_t)190);
+    assertMoreThan((uint8_t)198, myCount);
+    assertMoreThan((uint8_t)190, itemsReceived);
 }
 
 #endif
