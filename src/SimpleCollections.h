@@ -4,7 +4,8 @@
  */
 
 /**
- * @file SimpleCollections.h memory efficient collections for use on all embedded devices.
+ * @file SimpleCollections.h
+ * @brief memory efficient collections for use on all embedded devices.
  */
 
 #ifndef SIMPLE_COLLECTIONS_H

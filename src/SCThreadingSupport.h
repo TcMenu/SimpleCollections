@@ -6,6 +6,11 @@
 #ifndef SIMPLECOLLECTIONS_SCTHREADINGSUPPORT_H
 #define SIMPLECOLLECTIONS_SCTHREADINGSUPPORT_H
 
+/**
+ * @file SCThreadingSupport.h
+ * @brief provides the thread safety implementation for circular buffers
+ */
+
 // when not on mbed, we need to load Arduino.h to get the right defines for some boards.
 #ifndef __MBED__
 #include <Arduino.h>

@@ -10,6 +10,11 @@
 #include <inttypes.h>
 #include <SCThreadingSupport.h>
 
+/**
+ * @file SCCircularBuffer.h
+ * @brief a circular buffer implementation that is thread safe and works on all supported boards
+ */
+
 namespace tccollection {
 
 /**
