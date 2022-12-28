@@ -15,7 +15,8 @@ You can ask questions either in the discussions section of this repo, or using t
 * Discussions section of this git repo (available from top menu of github page).
 * [Arduino discussion forum](https://forum.arduino.cc/) where questions can be asked, please tag me using `@davetcc`.
 * [Legacy discussion forum probably to be made read only soon](https://www.thecoderscorner.com/jforum/).
-* https://www.thecoderscorner.com/products/arduino-libraries/simple-collections/
+* [Documentation on TheCodersCorner website](https://www.thecoderscorner.com/products/arduino-libraries/simple-collections/)
+* [Library compatibility matrix](https://www.thecoderscorner.com/products/arduino-libraries/)
 
 ## Installation for Arduino IDE
 
@@ -191,21 +192,6 @@ The queue is read back as normal, but we get back a pointer.
     }
 
 In short, you should never queue an object until it is fully and atomically ready. Again, just like with circular buffers themselves, the memory pool will wrap if the writer gets too far ahead of the reader.
-
-## Platforms known to work
-
-The following platforms are ones that we test with, they are generally the best choices to use with this library.
-
-| Platform | Board / Arch   | State            | Thread safety   |
-|----------|----------------|------------------|-----------------|
-| Arduino  | Nano 33 BLE    | Examples tested  | CAS             |         
-| Arduino  | Uno, MEGA, AVR | Examples tested  | Atomic          |
-| Arduino  | SAMD MKR1300   | Examples tested  | Atomic          |
-| Arduino  | SAMD Seeed     | Examples tested  | Atomic          |        
-| Arduino  | STM32Duino     | Examples tested  | CAS if possible |  
-| Arduino  | ESP8266        | Examples tested  | Atomic          |
-| Arduino  | ESP32          | Examples tested  | CAS             |
-| mbed     | STM32F4        | mbed example run | CAS             |
 
 Thread safety key:
 
