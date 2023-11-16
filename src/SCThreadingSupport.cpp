@@ -48,6 +48,9 @@ bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
 #endif
 
 #ifdef SIMPLECOLLECTIONS_PICO_PHT_SUPPORT
+#ifdef BUILD_FOR_PICO_CMAKE
+#include <pico/critical_section.h>
+#endif //BUILD_FOR_PICO_CMAKE
 
 // see https://raspberrypi.github.io/pico-sdk-doxygen/group__critical__section.html
 

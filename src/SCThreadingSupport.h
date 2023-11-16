@@ -11,8 +11,10 @@
  * @brief provides the thread safety implementation for circular buffers
  */
 
+#if defined(BUILD_FOR_PICO_CMAKE)
+#include <pico/stdlib.h>
+#elif !defined(__MBED__)
 // when not on mbed, we need to load Arduino.h to get the right defines for some boards.
-#ifndef __MBED__
 #include <Arduino.h>
 #endif
 
@@ -37,8 +39,7 @@
 #include <inttypes.h>
 
 // START PROCESSOR/BOARD SELECTION BLOCK
-#if defined(ARDUINO_PICO_REVISION)
-#include <Arduino.h>
+#if defined(ARDUINO_PICO_REVISION) || defined(BUILD_FOR_PICO_CMAKE)
 typedef volatile uint32_t* position_ptr_t;
 typedef volatile uint32_t position_t;
 bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal);
