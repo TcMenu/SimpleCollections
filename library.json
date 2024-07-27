@@ -4,7 +4,7 @@
   "description": "An associative container that can act as either a straight list or btree without needing your compiler to support std lib. Ordered fast lookup, sorted on insert so optimised for read. A non-blocking concurrent circular buffer implementation that is thread safe. Works from Uno upwards to ESP32, mbed etc",
   "repository": {
     "type": "git",
-    "url": "https://github.com/davetcc/SimpleCollections"
+    "url": "https://github.com/TcMenu/SimpleCollections"
   },
   "authors": [
     {

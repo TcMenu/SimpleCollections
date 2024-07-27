@@ -204,4 +204,4 @@ In the event you see issues indicating LDREX or STREX are not supported, please 
 
 ## Making changes to SimpleCollections
 
-We welcome people rolling up their sleeves and helping out, but please do reach out to us before starting any work, so we can ensure its in sync with our development. We use platformIO for development and have a specific project available to help you get started, along with tests that check many elements still work as expected. See [https://github.com/davetcc/tcLibraryDev]
+We welcome people rolling up their sleeves and helping out, but please do reach out to us before starting any work, so we can ensure its in sync with our development. We use platformIO for development and have a specific project available to help you get started, along with tests that check many elements still work as expected. See [https://github.com/TcMenu/tcLibraryDev]
