@@ -1,0 +1,31 @@
+name: Build
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        example:
+          - examples/bookshop/bookshop.ino
+          - examples/circularBuffer/circularBuffer.ino
+          - examples/iteration/iteration.ino
+          # MBED
+          # - examples/mbedExample
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install PlatformIO Core
+        run: pip install --upgrade platformio
+      - name: Build PlatformIO examples
+        run: pio ci --project-conf=platformio.ini
+        env:
+          PLATFORMIO_CI_SRC: ${{ matrix.example }}
