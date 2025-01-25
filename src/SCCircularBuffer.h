@@ -8,7 +8,7 @@
 
 #include <string.h>
 #include <inttypes.h>
-#include <SCThreadingSupport.h>
+#include "SCThreadingSupport.h"
 
 /**
  * @file SCCircularBuffer.h
