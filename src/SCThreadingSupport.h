@@ -81,12 +81,19 @@ typedef volatile uint32_t position_t;
 typedef volatile uint32_t* position_ptr_t;
 typedef volatile uint32_t position_t;
 #define atomicInitialisationSupport()
+#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
 inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
     uint32_t exp32 = expected;
     uint32_t new32 = newVal;
     uxPortCompareSet(ptr, exp32, &new32);
     return new32 == expected;
 }
+#else
+inline bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal) {
+    // function added in ESP-IDF v5.0
+    return esp_cpu_compare_and_set(ptr, expected, newVal);
+}
+#endif // ESP_IDF_VERSION < 5
 inline uint16_t readAtomic(position_ptr_t ptr) { return *(ptr); }
 #else
 #include <Arduino.h>
