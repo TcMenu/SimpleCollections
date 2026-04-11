@@ -8,7 +8,7 @@
 
 Dave Cherry / TheCodersCorner.com make this library available for you to use. It takes me significant effort to keep all my libraries current and working on a wide range of boards. Please consider making at least a one off donation via the sponsor button if you find it useful. In forks, please keep text to here intact.
 
-This library provides two collections. Firstly, a btree-list implementation that can be used as a straight list, but it is always associative. BtreeList works on a very wide range of boards from Uno right up to most mbed devices. It's benefit for library writers especially is the very wide range of devices it can target with low memory requirements on the smallest of boards. Secondly, a circular buffer that is safe for concurrent use on many Arduino and mbed boards. 
+This library provides two collections. Firstly, a btree-list implementation that can be used as a straight list, but it is always associative. BtreeList works on a very wide range of boards from Uno right up to most large 32 bit boards. It's benefit for library writers especially is the very wide range of devices it can target with low memory requirements on the smallest of boards. Secondly, a circular buffer that is safe for concurrent use on many boards. 
 
 Why? Because on many embedded boards std lib is simply not available, and on others it is potentially a bit too heavy at runtime. This collection is designed to run on anything from Uno upwards with reasonable performance. 
 
@@ -202,7 +202,7 @@ In short, you should never queue an object until it is fully and atomically read
 Thread safety key:
 
 * Atomic - the compare and set is implemented in software and wrapped with noInterrupts / interrupts
-* CAS - the compare and set is implemented using processor level instructions (STM32Duino) or in the case of mbed and ESP32, by their utility function.
+* CAS - the compare and set is implemented using processor level instructions (STM32Duino) or in the case of PicoSDK, ESP32, mbed by their utility function.
 
 The circular buffer is thread safe on nearly all boards, for larger ARM processors that are at least CortexM4 level you can enable CAS locking, we do it automatically for STM32Duino boards that meet the required cortex level. You can do this yourself by defining `SC_USE_ARM_ASM_CAS` for other ARM boards that are on at least CORTEX M4.
 
