@@ -13,7 +13,7 @@
 
 #if defined(BUILD_FOR_PICO_CMAKE)
 #include <pico/stdlib.h>
-#elif !defined(__MBED__)
+#elif !defined(__MBED__) && !defined(BUILD_FOR_STM32CUBE_CMAKE)
 // when not on mbed, we need to load Arduino.h to get the right defines for some boards.
 #include <Arduino.h>
 #endif
@@ -39,7 +39,16 @@
 #include <inttypes.h>
 
 // START PROCESSOR/BOARD SELECTION BLOCK
-#if defined(ARDUINO_PICO_REVISION) || defined(BUILD_FOR_PICO_CMAKE)
+#if defined(BUILD_FOR_STM32CUBE_CMAKE)
+#include <atomic>
+typedef std::atomic<uint32_t>* position_ptr_t;
+typedef std::atomic<uint32_t> position_t;
+constexpr void atomicInitialisationSupport() {}
+inline bool casAtomic(position_ptr_t ptr, uint32_t expected, uint32_t newVal) {
+    return ptr->compare_exchange_strong(expected, newVal);
+}
+inline uint32_t readAtomic(position_ptr_t ptr) { return ptr->load(); }
+#elif defined(ARDUINO_PICO_REVISION) || defined(BUILD_FOR_PICO_CMAKE)
 typedef volatile uint32_t* position_ptr_t;
 typedef volatile uint32_t position_t;
 bool casAtomic(position_ptr_t ptr, position_t expected, position_t newVal);
