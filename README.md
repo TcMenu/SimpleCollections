@@ -6,6 +6,12 @@
 [![davetcc](https://img.shields.io/badge/davetcc-dev-blue.svg)](https://github.com/davetcc)
 [![JSC TechMinds](https://img.shields.io/badge/JSC-TechMinds-green.svg)](https://www.jsctm.cz)
 
+## Functionality moving to TaskManagerIO
+
+From 4.6.0 of TcMenu framework and the next version of TaskManagerIO we'll integrate this support within TaskManagerIO. Why? The cost of having to reason about atomics in two places is too great for the very small gain in this being a separate library. Five years ago I predicted that multi core CAS atomics would become the norm and implemented this long before many libraries had even considered it. This is a consolidation that loses no functionality.
+
+------
+
 Dave Cherry / TheCodersCorner.com make this library available for you to use. It takes me significant effort to keep all my libraries current and working on a wide range of boards. Please consider making at least a one off donation via the sponsor button if you find it useful. In forks, please keep text to here intact.
 
 This library provides two collections. Firstly, a btree-list implementation that can be used as a straight list, but it is always associative. BtreeList works on a very wide range of boards from Uno right up to most large 32 bit boards. It's benefit for library writers especially is the very wide range of devices it can target with low memory requirements on the smallest of boards. Secondly, a circular buffer that is safe for concurrent use on many boards. 
