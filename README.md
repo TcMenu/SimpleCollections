@@ -8,7 +8,11 @@
 
 ## Functionality moving to TaskManagerIO
 
-From 4.6.0 of TcMenu framework and the next version of TaskManagerIO we'll integrate this support within TaskManagerIO. Why? The cost of having to reason about atomics in two places is too great for the very small gain in this being a separate library. Five years ago I predicted that multi core CAS atomics would become the norm and implemented this long before many libraries had even considered it. This is a consolidation that loses no functionality.
+**Moved to TaskManagerIO 5.0.0**
+
+TcMenu framework and the next version of TaskManagerIO will integrate this support directly within TaskManagerIO. Once you've moved to 5.0 remove simple collections library to avoid conflicts. To attempt to void such conflicts we renamed the header file to "BTreeList.h" in task manager. If you're using it yourself outside of tcMenu (quite rare) then simply changing the header is enough.
+
+Why? The cost of having to reason about atomics in two places is too great for the very small gain in this being a separate library. Five years ago I predicted that multi core CAS atomics would become the norm and implemented this long before many libraries had even considered it. This is a consolidation that loses no functionality.
 
 ------
 
